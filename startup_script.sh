@@ -22,4 +22,10 @@ git clone -b monolith https://github.com/express42/reddit.git /usr/puma
 cd /usr/puma && bundle install
 puma -d
 #check result
-ps xa | grep puma
+RETVAL=$?
+if [$RETVAL -ne 0]; then
+	echo "Attention! Error run application PUMA"
+	else
+	ps xa | grep puma
+	fi
+exit $RETVAL
