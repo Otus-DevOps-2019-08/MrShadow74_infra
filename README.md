@@ -62,7 +62,7 @@ gcloud compute firewall-rules create default-puma-server \
 
 Проверка http://35.246.148.158:9292
 
-testapp_IP = 35.198.148.158
+testapp_IP = 35.246.148.158
 testapp_port = 9292
 
 Добавлены файлы скриптов
@@ -70,3 +70,12 @@ deploy.sh
 install_mongodb.sh
 install_ruby.sh
 startup_script.sh
+
+gcloud compute instances create reddit-app \
+--boot-disk-size=10GB \
+--image-family ubuntu-1604-lts \
+--image-project=ubuntu-os-cloud \
+--machine-type=g1-small \
+--tags puma-server \
+--restart-on-failure \
+starup-script=./startup_script.sh
