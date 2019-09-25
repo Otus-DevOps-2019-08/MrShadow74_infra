@@ -95,3 +95,10 @@ startup_script.sh
 packer build ubuntu16.json
 Развёрнуто приложение reddit
 
+Выполнено самостоятельное задание
+Созданы файлы variables.json, variables.json.example
+Файл variables.json добавлен в исключения /.git/info/exclude
+
+Выполнено задание со *
+Создан файл immutable.json для создания VM семейства reddit-full
+
