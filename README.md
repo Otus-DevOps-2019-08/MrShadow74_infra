@@ -78,4 +78,27 @@ gcloud compute instances create reddit-app \
 --machine-type=g1-small \
 --tags puma-server \
 --restart-on-failure \
-starup-script=./startup_script.sh
+--metadata-from-file starup-script=./startup_script.sh
+
+Homework #5
+
+Создана ветка packer-base
+Создана директория config-scripts, в неё перенесены файлы
+deploy.sh
+install_mongodb.sh
+install_ruby.sh
+startup_script.sh
+Создана директория packer с подкаталогом scripts, в него помещены файлы install_mongodb.sh, install_ruby.sh
+Создан файл ubuntu16.json
+Создан файл variables.json и variables.json.example
+С помощью packer создан образ с предустановленными пакетами для развёртывания приложения
+packer build ubuntu16.json
+Развёрнуто приложение reddit
+
+Выполнено самостоятельное задание
+Созданы файлы variables.json, variables.json.example
+Файл variables.json добавлен в исключения /.git/info/exclude
+
+Выполнено задание со *
+Создан файл immutable.json для создания VM семейства reddit-full
+

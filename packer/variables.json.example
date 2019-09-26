@@ -1,0 +1,10 @@
+{
+		"project_id": "noname",
+		"source_image_family": "ubuntuOS-123",
+		"machine_type": "f1-micro",
+		"disk_size": "10",
+		"disk_type": "pd_standart",
+		"network": "default",
+		"tags": "http"
+}
+
