@@ -5,7 +5,7 @@ terraform {
 
 provider "google" {
   # Версия провайдера
-  version = "2.15"
+  version = "~>2.15"
 
   # ID проекта
   project = var.project
@@ -13,17 +13,20 @@ provider "google" {
 }
 
 module "app" {
-  source          = "../modules/app"
-  public_key_path = var.public_key_path
-  zone            = var.zone
-  app_disk_image  = var.app_disk_image
+  source           = "../modules/app"
+  public_key_path  = var.public_key_path
+  private_key_path = var.private_key_path
+  zone             = var.zone
+  app_disk_image   = var.app_disk_image
+  mongo_ip         = module.db.db_local_ip
 }
 
 module "db" {
-  source          = "../modules/db"
-  public_key_path = var.public_key_path
-  zone            = var.zone
-  db_disk_image   = var.db_disk_image
+  source           = "../modules/db"
+  public_key_path  = var.public_key_path
+  private_key_path = var.private_key_path
+  zone             = var.zone
+  db_disk_image    = var.db_disk_image
 }
 
 module "vpc" {

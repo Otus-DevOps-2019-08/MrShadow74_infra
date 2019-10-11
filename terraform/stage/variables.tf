@@ -32,4 +32,6 @@ variable db_disk_image {
   description = "Disk image for reddit db"
   default     = "reddit-db-base"
 }
-
+variable env_name {
+  description = "Prefix for resources names"
+}
