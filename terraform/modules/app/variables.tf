@@ -16,5 +16,5 @@ variable app_disk_image {
 }
 
 variable mongo_ip {
-  description = "Mongod ip"
+  description = "Mongod ip:port"
 }
