@@ -1,0 +1,10 @@
+all:
+  children:
+    app:
+      hosts:
+        35.195.59.190:
+
+    db:
+      hosts:
+        35.205.230.6:
+
