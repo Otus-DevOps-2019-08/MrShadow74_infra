@@ -3,6 +3,9 @@ resource "google_compute_instance" "db" {
   machine_type = "g1-small"
   zone         = var.zone
   tags         = ["reddit-db"]
+  labels       = {
+    group = "db"
+  }
   boot_disk {
     initialize_params {
       image = var.db_disk_image
@@ -22,13 +25,13 @@ resource "google_compute_instance" "db" {
     agent       = false
     private_key = file(var.private_key_path)
   }
-  provisioner "file" {
-    source      = "${path.module}/files/mongod.conf"
-    destination = "/tmp/mongod.conf"
-  }
-  provisioner "remote-exec" {
-    script = "${path.module}/files/deploy.sh"
-  }
+  #provisioner "file" {
+    #source      = "${path.module}/files/mongod.conf"
+    #destination = "/tmp/mongod.conf"
+  #}
+  #provisioner "remote-exec" {
+    #script = "${path.module}/files/deploy.sh"
+  #}
 }
 resource "google_compute_firewall" "firewall_mongo" {
   name    = "allow-mongo-default"
