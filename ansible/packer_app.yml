@@ -1,0 +1,22 @@
+---
+- name: Install Ruby && Bundler
+  hosts: all
+  become: true
+  vars:
+    packages:
+      - ruby-full
+      - ruby-bundler
+      - build-essential
+
+  tasks:
+  # Установка зависимостей
+  - name: Install ruby and rubygems and required packages
+    apt:
+      name: "{{ packages }}"
+  # Проверка результата установки
+  - name: Check installation result
+    command: "{{ item }}"
+    changed_when: false
+    loop:
+      - ruby -v
+      - bundler -v
