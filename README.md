@@ -1,17 +1,17 @@
 MrShadow74_infra
 MrShadow74 Infra repository
 
-#Homework #1
+# Homework #1
 создан аккаунт на GitHub
 создан файл anton_emelianov.txt
 выполнен первый Pull Request
 
-#Homework #2 ChatOps
+# Homework #2 ChatOps
 создана ветка play-travis
 проведена интеграция со Slack
 проведена интеграция с Travis
 
-Homework #3
+# Homework #3
 создана новая ветка cloud-bastion
 
 создан новый аккаунт в GCP
@@ -37,7 +37,7 @@ User eaa
 IdentityFile ~/.ssh/id_rsa
 ProxyCommand ssh -A 34.89.219.137 nc %h %p
 
-#Homework #4
+# Homework #4
 
 Установлен Google Cloud SDK
 Создан инстанс reddit-app
@@ -80,7 +80,7 @@ gcloud compute instances create reddit-app \
 --restart-on-failure \
 --metadata-from-file starup-script=./startup_script.sh
 
-#Homework #5
+# Homework #5
 
 Создана ветка packer-base
 Создана директория config-scripts, в неё перенесены файлы
@@ -102,7 +102,7 @@ packer build ubuntu16.json
 Выполнено задание со *
 Создан файл immutable.json для создания VM семейства reddit-full
 
-#Homework #6
+# Homework #6
 Создана ветка terraform-1
 Создана директория terraform
 Установлен terraform -v 0.12.9
@@ -120,7 +120,7 @@ packer build ubuntu16.json
 Создан файл lb.tf с конфигурацией terraform с созданием HTTP балансировщика на инстансах reddit-app1 и reddit-app2.
 Узким местом такой конфигурации будет необходимость каждый раз править код для расширения количества узлов балансировки. Решением проблемы является создание количества узлов переменной count.
 
-#Homework #7
+# Homework #7
 Создана ветка terraform-2
 Созданы prod и stage
 Созданы модули app, db, vpc
@@ -134,7 +134,7 @@ packer build ubuntu16.json
 Настроены провиженеры
 Изменена переменная DATABASE_URL
 
-#Homework #8 Ansible-1
+# Homework #8 Ansible-1
 Создана вветка ansible-1
 Установлен ansible
 Cоздан файл inventory, в последствии переработан для групповой обработки хостов
@@ -170,7 +170,7 @@ inventory = ./inventory.py
 
 Создан скрипт inventory.py для получения необходимых данных. Скрипт возвращает доступные значения для заданных параметров в inventory.json
 
-#Homework #9 Ansible-2
+# Homework #9 Ansible-2
 Создана ветка ansible-2
 Отключены провижинеры для модулей app и db в terraform
 В gitignore добавлено исключение *.retry
@@ -191,9 +191,9 @@ inventory = ./inventory.py
 
 В git создана ветка ansible-3
 
-#Ansible: работа с ролями и окружениями
+# Ansible: работа с ролями и окружениями
 
-##Роли
+## Роли
 Создаем структуру ролей
 ansible-galaxy init app
 ansible-galaxy init db
@@ -203,19 +203,19 @@ ansible-galaxy install -r environments/stage/requirements.yml
 
 Заполнил роли на основе ранее созданных плейбуков app.yml и db.yml
 
-##Окружения
+## Окружения
 Создал директорию environments в директории ansible, в ней созданы prod и stage.
 Скорректирован конфигурационный файл ansible.cfg под использование по умолчанию инвентори окружения stage.
 Созданы директории group_vars в директориях окружений, настроены конфигурации переменных окружений.
 Для группы all ansible в переменных окружений создан файл all с записью env: <имя_переменной>
 Для вывода информации о текущем окружении в файлы defaults/main.yml в ролях  добавлена запись env: local
 
-##Организация дерева ansible
+## Организация дерева ansible
 Созданы директории playbooks и old, куда перенесы плейбуки и файлы из прошлы ДЗ соответственно. Для перемещений файлов использована команда git mv.
 После переносов файлов скорректированы шаблоны packer_app.yml и packer_db.yml
 Скорректирован ansible.cfg  с целью оптимизации и улучшения.
 
-##Работа с комьюнити-ролями
+## Работа с комьюнити-ролями
 Настроил работу обратного проксирования для приложения Reddit с помощью nginx и применением роли jdauphant.nginx
 В окружениях создан файл requirements.yml
 - src: jdauphant.nginx
@@ -238,7 +238,7 @@ proxy_pass http://127.0.0.1:9292;
 
 Проверена работа, приложение доступно как на 80, так и на 9292 портах.
 
-##Ansible Vault
+## Ansible Vault
 Для безопасной работы с приватными данными используется механизм Ansible Vault.
 В файл ansible.cfg добавлена запись
 
@@ -258,13 +258,13 @@ su qauser
 Для редактирования переменных нужно использоват команду ansible-vault edit <file>
 А для расшифровки: ansible-vault decrypt <file>
 
-##Задание со * Работа с динамическим инвентори
+## Задание со * Работа с динамическим инвентори
 Работа динамического инвентори была настроена в предыдущих ДЗ с использованием модуля gcp_compute.
 
-##Задание с ** Настройка TravisCI
+## Задание с ** Настройка TravisCI
 
-Travis CI build status
-![build status]https://travis-ci.com/Otus-DevOps-2019-08/MrShadow74_infra.svg?branch=master
+Travis CI
+![build status](https://travis-ci.com/Otus-DevOps-2019-08/MrShadow74_infra.svg?branch=master)
 
 Файл .travis.yml дополнен установкой packer, terraform, ansible-lint, tflint
 
