@@ -1,9 +1,9 @@
 ---
-- name: Configure application
-  hosts: app
-  become: true
+# tasks file for app
+    - name: Show info about the env this host belongs to
+      debug:
+        msg: "This host is in {{ env }} environment!!!"
 
-  tasks:
     - name: Add unit file for Puma
       copy:
         src: files/puma.service
@@ -19,7 +19,3 @@
 
     - name: enable puma
       systemd: name=puma enabled=yes
-
-  handlers:
-  - name: reload puma
-    systemd: name=puma state=restarted

@@ -1,0 +1,10 @@
+#db_host: 10.132.15.228
+db_host: "{{ hostvars['reddit-db-stage'].networkInterface[0].networkIP }}"
+
+nginx_sites:
+  default:
+  - listen 80
+  - server_name "reddit"
+  - location / {
+      proxy_pass http://127.0.0.1:9292;
+    }

@@ -1,0 +1,15 @@
+plugin: gcp_compute
+projects:
+  - enhanced-casing-253209
+auth_kind: serviceaccount
+service_account_file: ~/.gce/enhanced-casing-253209-15be97bf74eb.json
+hostnames:
+  # Список имен хостов
+  - name
+compose:
+   ansible_host: networkInterfaces[0].accessConfigs[0].natIP
+keyed_groups:
+  # Группировка хостов
+  - prefix: ""
+    separator: ""
+    key: labels['group']

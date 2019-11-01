@@ -14,7 +14,7 @@
             "ssh_username": "appuser",
             "machine_type": "{{ user `machine_type`}}",
             "image_description": "MongoDB",
-            "disk_size": 12,
+            "disk_size": 10,
             "disk_type": "pd-standard",
             "network": "default",
             "tags": ["mongodb-server"]
@@ -23,7 +23,7 @@
     "provisioners": [
         {
             "type": "ansible",
-            "playbook_file": "ansible/packer_db.yml"
+            "playbook_file": "ansible/playbooks/packer_db.yml"
         }
     ]
 }

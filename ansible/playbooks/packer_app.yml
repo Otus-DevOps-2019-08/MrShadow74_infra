@@ -13,6 +13,7 @@
   - name: Install ruby and rubygems and required packages
     apt:
       name: "{{ packages }}"
+      force_apt_get: yes
   # Проверка результата установки
   - name: Check installation result
     command: "{{ item }}"
