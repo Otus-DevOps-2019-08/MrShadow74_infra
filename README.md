@@ -284,18 +284,18 @@ Travis CI
 
 ### Установка Vagrant
 
-Устанавливаем VirtualBox	apt install virtualbox
+Устанавливаем VirtualBox ```apt install virtualbox```
 
 Устанавливает дистрибутив Vagrant	https://www.vagrantup.com/downloads.html скачиваем и устанавливаем вариант для Linux, так как рабочая среда Ubuntu
 
 Проверяем установку: vagrant -v
-
+```
 vagrant --version
 Vagrant 2.2.6
-
+```
 Создал файл Vagrantfile с конфигурацией двух виртуальных машин dbserver и appserver
 
-Добавил в .gitignore исключения для Vagrant и Molecule:
+Добавил в `.gitignore` исключения для Vagrant и Molecule:
 
 ```
 #Vagrant & molecule
@@ -309,8 +309,9 @@ Vagrant 2.2.6
 
 Командой vagrant up создадим виртуальные машины dbserver и appserver.
 
-Проверяем список локальных машин
+Проверяем список и статус локальных машин
 ```
 vagrant box list
+vagrant status
 ```
 
