@@ -3,44 +3,39 @@ sudo: required
 language: bash
 env:
   global:
-    PACKER_VERSION: '1.4.4'
-    TERRAFORM_VERSION: '0.12.8'
+  - PACKER_VERSION: 1.4.4
+    TERRAFORM_VERSION: 0.12.8
+  - secure: YQyGWq0SThfMpI10cMTO5snDXJ+AzAlcCQ3eRVVW0WslahQWNntfKfh8785RIler8VAtmbMn3NmsUusCGe2PLqVLOuE2elDhpzz40IrgcaXbdnQvgsDr0MHTrWyTBxhX2QmC/kC2r7YVbqbLEASVqOCqtoLFODvq6fkwJ0hrRzHWOOVv9UjYq2sdNSmlpdIJzU2O0J8F6WuD8e7c5BXfMNXWcJ6YCj/r6e33TLMBgnCt1SYSQU5YrWELjvjt2n9210Obp8C++m+pq1V4aVc+VQDTTwjwMkAfsa9e1DU3nm1K8mJtI1vFI9h+GI/yRsGcoDiGkDThO15aBeTUcTiHIg2TpricY2q4ccVE5rfQ2iZVC0ZiDu8HU0E+JYC81KlRXPux4rdjOK9jJkcV4x/19Nfe4XRIk0jE8nuYCo3BWyC9in3zcXEebi+GYBDa5Y0z9RG914dg2pcVq2PsUk6am59nUONt6N62dScJjXm7De8pZCCMNQhosAgXWql1uALiA4DOZ7+TgVL3NVB9vV19Ue5x9i4eYu2KyE4tRWlBYlXMQgBZ8aT+EYOWSdRwSomSFh6dxCoYa/hEZtuG9kvPYkCdWuXhlZC/IiMPWcFinCDRJ7CbSeoDWAUeO2j4HaAFfKQvBaWi3qhTJf8FUZjZP9tyO6/I3gZGY1IckH0k0zk=
+  - secure: Ez98hswTTTI0t8waINUUT5xOc1e6Nqv+hjPHotAKy1/K48bcOdhZsljkW6ehWenkth069NUD/aobHkjRuPo8IaQ05Vm0UK5hj3xvUA2mJUSnHRVZc2Nles1N4yW/LpdpJBimTpGXr7NA9Ngox/kwqZjy7Ju5xr1RKZxyiK2PYiRX/6qWQk0XwYAUOIMjszHCHwisnfNRueRsaRP0KKht+PKBsbOSbQ7Kcoh3EXnCTx3/ZNux2xpj0rVe9JLCduBcj0KruUUZBkUQIG7FTiY+QBXa2EQnfh/FBoorm7hTj1fn+IwyVHoumFjiamIPfkC1xk7nVeNHhy2MJEgZaxcksaDylTGrnx3NAWRfWdUJqvBoLpcvEEqIyvDCjqIMnRzAQRC1xYT4wb6+3UwfyRN9GYaxVN3hVCKeH1T9iUnko44WMEguNkp5/PXEM+NFX1gbsx1OUXGmoUaAhwtwS6u++jD2KV2i2rCCVh8k3lbt+PkFYOLHNYRwKifXgKQqntyktWG5EyN3pZJRn8/hqKc/1rwam2UtmtYRgOFyvpCNH/gUIT/Ehk7ADOUpH1Mgrc4B45gdfOrxAAP5JjKsaPyE7VDzXkCk2H3ReT80q+szAkgOWMzEQ3ju6xjaQGGzyqkxWmSW4BdoEYuZY0JJzwQEoQ+kBBFVzGEraN6DtExSTfU=
 before_install:
-- curl https://raw.githubusercontent.com/express42/otus-homeworks/2019-08/run.sh | bash
-
+- curl https://raw.githubusercontent.com/express42/otus-homeworks/2019-08/run.sh |
+  bash
 install:
-  # Install Hashicorp's packer
-  - |
-    curl -L -o packer.zip "https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip"
-    unzip -d ~/bin packer.zip
-    packer version  
-  # Install terraform
-  - |
-    curl -L -o terraform.zip "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
-    unzip -d ~/bin terraform.zip
-    terraform --version
-  # install ansible linter
-  - |
-    pip install --user ansible-lint
-    ansible-lint --version
-    # Install tflint
-  - |
-    curl https://raw.githubusercontent.com/wata727/tflint/master/install_linux.sh | bash
-    tflint --version
-
+- "curl -L -o packer.zip \"https://releases.hashicorp.com/packer/${PACKER_VERSION}/packer_${PACKER_VERSION}_linux_amd64.zip\"\nunzip
+  -d ~/bin packer.zip\npacker version  \n"
+- |
+  curl -L -o terraform.zip "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip"
+  unzip -d ~/bin terraform.zip
+  terraform --version
+- |
+  pip install --user ansible-lint
+  ansible-lint --version
+  # Install tflint
+- |
+  curl https://raw.githubusercontent.com/wata727/tflint/master/install_linux.sh | bash
+  tflint --version
 script:
-  - packer validate -var-file=packer/variables.json.example packer/db.json
-  - packer validate -var-file=./packer/variables.json.example ./packer/app.json
-  - cd terraform/prod && terraform get && cd ../..
-  - cd terraform/prod && terraform init -backend=false && cd ../..
-  - cd terraform/prod && terraform validate && cd ../..
-  - cd terraform/stage && terraform get && cd ../..
-  - cd terraform/stage && terraform init -backend=false && cd ../..
-  - cd terraform/stage && terraform validate && cd ../..
-  - tflint terraform/prod
-  - tflint terraform/stage
-  - ansible-lint -v ansible/playbooks/site.yml
-
+- packer validate -var-file=packer/variables.json.example packer/db.json
+- packer validate -var-file=./packer/variables.json.example ./packer/app.json
+- cd terraform/prod && terraform get && cd ../..
+- cd terraform/prod && terraform init -backend=false && cd ../..
+- cd terraform/prod && terraform validate && cd ../..
+- cd terraform/stage && terraform get && cd ../..
+- cd terraform/stage && terraform init -backend=false && cd ../..
+- cd terraform/stage && terraform validate && cd ../..
+- tflint terraform/prod
+- tflint terraform/stage
+- ansible-lint -v ansible/playbooks/site.yml
 notifications:
   slack:
     rooms:

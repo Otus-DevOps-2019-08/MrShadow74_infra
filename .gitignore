@@ -5,3 +5,11 @@
 *.tfvars
 .terraform/
 jdauphant.nginx
+#ansible/role/db
+# Vagrant & molecule
+.vagrant/
+*.log
+*.pyc
+.molecule
+.cache
+.pytest_cache
