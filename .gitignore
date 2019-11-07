@@ -5,7 +5,6 @@
 *.tfvars
 .terraform/
 jdauphant.nginx
-#ansible/role/db
 # Vagrant & molecule
 .vagrant/
 *.log

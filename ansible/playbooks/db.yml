@@ -6,3 +6,4 @@
    - ansible-role.db
   vars:
     mongo_bind_ip: 0.0.0.0
+
