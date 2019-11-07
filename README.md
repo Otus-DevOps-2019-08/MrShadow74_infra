@@ -307,11 +307,262 @@ Vagrant 2.2.6
 .pytest_cache
 ```
 
-Командой vagrant up создадим виртуальные машины dbserver и appserver.
+Командой `vagrant up` создадим виртуальные машины dbserver и appserver.
 
 Проверяем список и статус локальных машин
 ```
 vagrant box list
 vagrant status
 ```
+Проверяем доступ к созданным виртуальным машинам по ssh
+```
+vagrant ssh appserver
+vagrant ssh dbserver
+```
+Подключение проходит успешно, ping между ними проходит успешно.
 
+### Доработка ролей
+
+Провижининг
+
+Добавил провижининг для хоста dbserver, проверил его работу командой `vagrant provision dbserver`
+
+Результат выполнения *failed*, так как требуется Python. Для установки Python создан файл *playbook/base.yml* и добавлен в *site.yml*. Одновременно исключен из выполнения плейбук users.yml
+
+Повторная попытка выполнить провижинер показала, что провижинер заработал, но у нас нет MongoDB. Для исправления данной ситуации добавлены задачи по установке MongoDB из `packer_db.yml`:
+
+ - установка MongoDB вынесена в файл ansible/roles/db/tasks/install_mongo.yml
+ - конфигурирование MongoDB вынесено в файл ansible/roles/db/tasks/config_mongo.yml
+
+По аналогии добавлен провижининг для роли *app*
+
+При проверке работы провижинера vagrant provision appserver возникла ошибка добавления файла конфигурации в связи с отсутствием каталога пользователя.
+
+Для исправления ошибки делаем параметризацию роли *ansible/roles/app*
+ * В переменные добавлен пользователь по умолчанию deploy_user: appuser
+ * Файл puma.service перемещен в шаблоны ansible/roles/app/template/puma.service.j2 с заменой пользователя appuser на переменную deploy_user
+ * В таске ansible/roles/app/task/puma.yml пользователь appuser так же заменен на переменную deploy_user
+
+Аналогично скорректирован ansible/playbook/deploy.yml - пользователь appuser заменен на переменную deploy_user
+
+В файл ansible/Vagrant через extra_vars переоперделена переменная deploy_user
+```
+ansible.extra_vars = {
+  "deploy_user" => "ubuntu"}
+```
+После запуска провижинера `vagrant provision appserver` выполнение успешно.
+
+Проверка *http://10.10.10.20:929* проходит успешно.
+
+Полный тест с нуля проходит успешно.
+```
+vagrant destroy -f
+vagrant up
+vagrant destroy -f
+```
+
+### Задание со *
+После разворачивания виртуальных машин nginx устанавливается, но не работает проброс.
+
+Причина - vagrant использует собственный инвентори, про внешние ничего не знает.
+
+Для корректной работы необходимо добавить в файл *Vagrant* в раздел *extra_vars* следующую конфигурацию
+```
+          "nginx_sites" => {
+            "default" => [
+              "listen 80",
+              "server_name \"reddit\"",
+              "location / {
+                proxy_pass http://127.0.0.1:9292;
+              }"
+            ]
+        }
+```
+После внесения изменений приложение доступно в браузере http://10.10.10.20.
+
+## Тестирование роли. Molecule и Testinfra.
+
+### Установка зависимостей
+
+В файл ansible/requirements.txt добавлены записи новых зависимостей:
+```
+molecule>=2.6
+testinfra>=1.10
+python-vagrant>=0.5.15
+```
+Установка новых зависимостей выполнена с помощью команды `pip install -r requirements.txt`
+```
+molecule --version
+molecule, version 2.22
+```
+### Тестирование db роли
+В директории с ролью ansible/roles/db выполним команду `molecule init scenario --scenario-name default -r db -d vagrant`
+
+В роли *db* создан дефалтовый сценарий для Molecule. В ansible/roles/db/molecule/default/tests/test_default.py создано несколько тестов для проверки
+```
+# check if MongoDB is enabled and running
+def test_mongo_running_and_enabled(host):
+    mongo = host.service("mongod")
+    assert mongo.is_running
+    assert mongo.is_enabled
+
+# check if configuration file contains the required line
+def test_config_file(host):
+    config_file = host.file('/etc/mongod.conf')
+    assert config_file.contains('bindIp: 0.0.0.0')
+    assert config_file.is_file
+```
+Создадим виртуальную машину для проверки роли. В директории `ansible/roles/db` выполните команду:
+`
+$ molecule create
+`
+В результате будет создана ВМ.
+Посмотрим список созданных инстансов, которыми управляет Molecule с помощью команды
+`
+$ molecule list
+`
+Подключимся по SSH внутрь ВМ с помощью команды
+`
+$ molecule login -h instance
+`
+Дополним плейбук Molecule `db/molecule/default/playbook.yml`:
+`
+---
+- name: Converge
+  become: true
+  hosts: all
+  vars:
+    mongo_bind_ip: 0.0.0.0
+  roles:
+  - role: db
+`
+Применим playbook.yml в котором вызывается наша роль к созданному хосту
+`
+$ molecule converge
+`
+и выполним для неё тест
+`
+$ molecule verify
+`
+## Самостоятельное задание
+
+### Реализовать проверки того, что БД слушает по порту tcp 27017.
+* Сделано с использованием модуля Testinfra *testinfra.modules.socket.Socket class*
+`
+# check if listen port tcp:27017
+def test_listen_mongo_port(host):
+    assert host.socket("tcp://0.0.0.0:27017").is_listening
+`
+### Переназначение ролей app и db в плейбуках packer_app.yml и packer_db.yml
+
+После изменения ролей необходимо внести изменения в файлы сборки образов packer.
+
+### Провижининг db.json
+* В таски ansible/roles/db/tasks/main.yml добавлены теги для разделения процессов
+`
+- import_tasks: install_mongodb.yml
+  tags:
+    - db_install_mongo
+
+- import_tasks: config_mongodb.yml
+  tags:
+    - db_config_mongo
+`
+* В плейбуке packer_db.yml вместо провижинера указываем роль
+`
+roles:
+  - db
+`
+* В файле packer/db.json добавлены разделы
+`
+"extra_arguments": ["--tags","db_install_mongo"],
+"ansible_env_vars": ["ANSIBLE_ROLES_PATH={{ pwd }}/ansible/roles"]
+`
+### Провижиринг app.json
+
+* В таски ansible/roles/app/tasks/main.yml добавлены теги для разделения процессов
+`
+- include: ruby.yml
+  tags:
+   - ruby_app
+
+- include: puma.yml
+  tags:
+   - puma_app
+`
+* В плейбуке packer_app.yml вместо провижинера указываем роль
+`
+roles:
+  - app
+`
+* В файле packer/app.json добавлены разделы
+`
+"extra_arguments": ["--tags","ruby_app"],
+"ansible_env_vars": ["ANSIBLE_ROLES_PATH={{ pwd }}/ansible/roles"]
+`
+## Задание со *
+
+### Вынос роли DB в отдельный репозиторий
+* Создан и склонирован новый репозиторий MrShadow74/ansible-role-db
+* В репозиторий перенесен каталог роли DB
+* Делаем проверку molecule converge, который завершается ошибкой "не найдена роль DB". Решение находится в документации https://github.com/ansible/molecule/blob/fc90dfd6c8a5fd3a3068b9cc8311dc176ab261cd/molecule/provisioner/ansible.py#L203-L208
+* Корректируем ansible-role-db/molecule/default/playbook.yml
+`
+roles:
+    - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+`
+* Добавляю в файлы requirements.yml окружений stage и prod запись
+`
+- name: ansible-role.db
+  src: https://github.com/MrShadow74/ansible-role-db, выгружать ей в репозиторий нет необходимости
+`
+* Прописываю в исключения .gitignore роль ansible-role-db
+* Установка созданной зависимости в окружение stage, в prod ставить не стал
+`
+ansible-galaxy install -r environments/stage/requirements.yml
+`
+* Скорректирован плейбук ansible/playbooks/db.yml для роли
+`
+  roles:
+   - ansible-role.db
+`
+* В ходе тестирования корректности сделанных изменений обнаружил нарушение формирования шаблона db_config.j2 из-за разности имён пользователей в разных средах развёртывания. С помощью оператора ветвления реализована вариативность имени пользователя в зависимости от среды.
+`
+{% if env == 'local' %}
+DATABASE_URL = {{ db_host }}
+{% elif env in ['stage', 'prod'] %}
+DATABASE_URL = {{ hostvars[groups['db'][0]]['ansible_default_ipv4']['address'] }}
+{% endif %}
+`
+* Так же при сборке образа `packer build db.json` выявлена ошибка роли db в ansible/playbooks/packer_db.yml, внесена корректировка
+`
+roles:
+  - ansible-role.db
+`
+### Автоматическое тестирование для роли ansible-role.db
+
+На основе примера из домашнего задания https://github.com/Artemmkin/test-ansible-role-with-travis
+
+* Ддобавляю в .gitignore:
+*.log
+*.tar
+*.pub
+credentials.json
+google_compute_engine
+
+* wget https://raw.githubusercontent.com/vitkhab/gce_test/c98d97ea79bacad23fd26106b52dee0d21144944/.travis.yml
+* ssh-keygen -t rsa -f google_compute_engine -C 'TravisCI' -q -N ''
+* Добавлю открытый ключ в meta-данные GCP
+* Используя имеющийся credentials.json из ранее выполненного ДЗ
+* Выполню шифрование переменных:
+`
+travis encrypt GCE_SERVICE_ACCOUNT_EMAIL='796339086738-compute@developer.gserviceaccount.com' --add --com
+travis encrypt GCE_CREDENTIALS_FILE="$(pwd)/credentials.json" --add --com
+travis encrypt GCE_PROJECT_ID='infra-253209' --add --com
+`
+* Выполню шифрование файлов:
+`
+tar cvf secrets.tar credentials.json google_compute_engine
+travis login
+travis encrypt-file secrets.tar --add --com
+`
