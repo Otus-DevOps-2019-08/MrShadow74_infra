@@ -1,6 +1,6 @@
-#db_host: 10.132.15.228
-db_host: "{{ hostvars['reddit-db-stage'].networkInterface[0].networkIP }}"
-
+#db_host: 10.132.0.21
+#db_host: "{{ hostvars['reddit-app'].networkInterface[0].networkIP }}"
+db_host: "{{ hostvars[groups['app'][0]]['ansible_default_ipv4']['address'] }}"
 nginx_sites:
   default:
   - listen 80
